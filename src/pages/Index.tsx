@@ -1,3 +1,4 @@
+import React from "react";
 import { JobSearchForm } from "@/components/JobSearchForm";
 import { JobResults } from "@/components/JobResults";
 import { useJobSearch } from "@/hooks/useJobSearch";
