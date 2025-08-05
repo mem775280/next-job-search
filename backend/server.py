@@ -169,6 +169,9 @@ async def scrape_linkedin_jobs(request: LinkedInScrapingRequest, background_task
     try:
         scraper = await get_scraper_instance()
         
+        # Check login status before using cached flag
+        await scraper.check_login_status()
+        
         if not scraper.is_logged_in:
             raise HTTPException(status_code=401, detail="Please login to LinkedIn first")
         
