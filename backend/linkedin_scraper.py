@@ -658,17 +658,36 @@ class LinkedInScraper:
 _scraper_instance: Optional[LinkedInScraper] = None
 
 async def get_scraper_instance() -> LinkedInScraper:
-    """Get or create scraper instance"""
+    """Get or create scraper instance with enhanced error handling"""
     global _scraper_instance
     
     if _scraper_instance is None:
         _scraper_instance = LinkedInScraper()
+        
+        # Try to initialize browser - first attempt headless
         try:
-            await _scraper_instance.init_browser(headless=True)  # Set to True for headless mode in container
-        except Exception as e:
-            logger.error(f"Failed to initialize scraper browser: {e}")
-            # For testing, we'll still return the instance but it won't be functional
-            pass
+            logger.info("Initializing browser in headless mode...")
+            await _scraper_instance.init_browser(headless=True)
+            logger.info("Browser initialized successfully in headless mode")
+            
+        except Exception as headless_error:
+            logger.warning(f"Headless browser initialization failed: {headless_error}")
+            
+            # Try again with non-headless mode as fallback
+            try:
+                logger.info("Attempting browser initialization in non-headless mode...")
+                await _scraper_instance.init_browser(headless=False)
+                logger.info("Browser initialized successfully in non-headless mode")
+                
+            except Exception as non_headless_error:
+                logger.error(f"All browser initialization attempts failed: {non_headless_error}")
+                
+                # Create a mock browser instance for testing
+                logger.warning("Creating scraper instance without browser for testing purposes")
+                _scraper_instance.browser = None
+                _scraper_instance.context = None
+                _scraper_instance.page = None
+                _scraper_instance.is_logged_in = False
     
     return _scraper_instance
 
