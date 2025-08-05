@@ -8,24 +8,23 @@ import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Search, AlertTriangle, Heart, MessageCircle, Briefcase } from 'lucide-react';
 
-interface LinkedInPost {
-  id: string;
-  author: string;
-  content: string;
-  timestamp: string;
-  likes: number;
-  comments: number;
-  isJobPost: boolean;
+interface ScrapedJob {
+  title: string;
+  company: string;
+  location: string;
   url: string;
+  description?: string;
+  postedDate?: string;
 }
 
 export const LinkedInScraper = () => {
   const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState('');
-  const [posts, setPosts] = useState<LinkedInPost[]>([]);
+  const [location, setLocation] = useState('Pakistan');
+  const [jobs, setJobs] = useState<ScrapedJob[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
-  const scrapePosts = async () => {
+  const scrapeJobs = async () => {
     if (!searchQuery.trim()) {
       toast({
         title: "Error",
@@ -38,27 +37,34 @@ export const LinkedInScraper = () => {
     setIsLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke('linkedin-scraper', {
-        body: { searchQuery: searchQuery.trim() }
+        body: { 
+          searchQuery: searchQuery.trim(),
+          location: location.trim()
+        }
       });
 
       if (error) throw error;
 
-      setPosts(data.posts || []);
+      setJobs(data.jobs || []);
       
       if (data.warning) {
         toast({
-          title: "Important Warning",
+          title: "🚨 Critical Warning",
           description: data.warning,
           variant: "destructive",
-          duration: 10000,
+          duration: 15000,
         });
+      }
+
+      if (data.risks) {
+        console.warn('LinkedIn Scraping Risks:', data.risks);
       }
 
     } catch (error) {
       console.error('Scraping error:', error);
       toast({
-        title: "Error",
-        description: "Failed to scrape LinkedIn posts",
+        title: "Scraping Failed",
+        description: "LinkedIn likely blocked the request. This is expected behavior.",
         variant: "destructive",
       });
     } finally {
@@ -87,60 +93,71 @@ export const LinkedInScraper = () => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Search className="h-5 w-5" />
-            LinkedIn Post Search (Demo)
+            LinkedIn Job Scraper (⚠️ REAL SCRAPING)
           </CardTitle>
           <CardDescription>
-            Search for posts and job listings (showing simulated data only)
+            Real LinkedIn job scraping with browser automation - VIOLATES ToS!
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex gap-2">
             <Input
-              placeholder="Enter search keywords (e.g., 'software engineer jobs')"
+              placeholder="Enter job title (e.g., 'data analyst')"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && scrapePosts()}
+              onKeyPress={(e) => e.key === 'Enter' && scrapeJobs()}
             />
-            <Button onClick={scrapePosts} disabled={isLoading}>
-              {isLoading ? 'Searching...' : 'Search'}
+            <Input
+              placeholder="Location (e.g., 'Pakistan')"
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+              className="max-w-48"
+            />
+            <Button onClick={scrapeJobs} disabled={isLoading}>
+              {isLoading ? 'Scraping...' : 'Scrape Jobs'}
             </Button>
           </div>
         </CardContent>
       </Card>
 
-      {posts.length > 0 && (
+      {jobs.length > 0 && (
         <div className="space-y-4">
-          <h3 className="text-lg font-semibold">Search Results ({posts.length} posts)</h3>
-          {posts.map((post) => (
-            <Card key={post.id} className="w-full">
+          <h3 className="text-lg font-semibold">Scraped Jobs ({jobs.length} found)</h3>
+          {jobs.map((job, index) => (
+            <Card key={index} className="w-full">
               <CardHeader className="pb-3">
                 <div className="flex items-start justify-between">
                   <div>
-                    <CardTitle className="text-base">{post.author}</CardTitle>
-                    <CardDescription>
-                      {new Date(post.timestamp).toLocaleDateString()}
+                    <CardTitle className="text-base">{job.title}</CardTitle>
+                    <CardDescription className="text-sm font-medium">
+                      {job.company} • {job.location}
                     </CardDescription>
+                    {job.postedDate && (
+                      <CardDescription className="text-xs">
+                        Posted: {job.postedDate}
+                      </CardDescription>
+                    )}
                   </div>
-                  {post.isJobPost && (
-                    <Badge variant="secondary" className="flex items-center gap-1">
-                      <Briefcase className="h-3 w-3" />
-                      Job Post
-                    </Badge>
-                  )}
+                  <Badge variant="secondary" className="flex items-center gap-1">
+                    <Briefcase className="h-3 w-3" />
+                    Job
+                  </Badge>
                 </div>
               </CardHeader>
               <CardContent className="space-y-3">
-                <p className="whitespace-pre-wrap text-sm">{post.content}</p>
-                <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                  <div className="flex items-center gap-1">
-                    <Heart className="h-4 w-4" />
-                    {post.likes} likes
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <MessageCircle className="h-4 w-4" />
-                    {post.comments} comments
-                  </div>
-                </div>
+                {job.description && (
+                  <p className="text-sm text-muted-foreground">{job.description}</p>
+                )}
+                {job.url && (
+                  <a 
+                    href={job.url} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-blue-600 hover:text-blue-800 text-sm underline"
+                  >
+                    View Job on LinkedIn
+                  </a>
+                )}
               </CardContent>
             </Card>
           ))}
