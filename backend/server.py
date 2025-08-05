@@ -128,7 +128,7 @@ async def linkedin_auth(request: LinkedInLoginRequest):
             return result
         
         else:
-            raise HTTPException(status_code=400, detail="Invalid action")
+            raise HTTPException(status_code=400, detail="Invalid action. Valid actions are: check_status, login, logout")
             
     except Exception as e:
         logging.error(f"LinkedIn auth error: {e}")
