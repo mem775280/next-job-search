@@ -195,6 +195,18 @@ backend:
         agent: "testing"
         comment: "✅ PASSED: CSV export endpoint working correctly. Properly returns 404 when no jobs are available for export. Fixed HTTPException handling to return correct status codes."
 
+  - task: "Authentication State Management Bug Fix"
+    implemented: false
+    working: false
+    file: "server.py"
+    stuck_count: 1
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: false
+        agent: "testing"
+        comment: "❌ CRITICAL BUG IDENTIFIED: The scraping endpoint in server.py checks scraper.is_logged_in directly without calling check_login_status() first. This causes scraping to fail even when user has valid session because is_logged_in flag starts as False and is only updated when check_login_status() is explicitly called. This explains the user's reported issue: 'linkedin is already logged in but getting error on scraping'. The server should call await scraper.check_login_status() before checking is_logged_in flag in the scrape_linkedin_jobs endpoint."
+
 frontend:
   - task: "LinkedIn Login/Logout UI"
     implemented: true
