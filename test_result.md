@@ -299,4 +299,8 @@ agent_communication:
   - agent: "main"
     message: "ISSUE FIX: User reported LinkedIn scraping errors. Fixed missing soupsieve dependency for BeautifulSoup CSS selectors, ensured Playwright browsers are properly installed, and restarted backend services. Authentication status shows 'not logged in' - need to verify full login and scraping flow works correctly. Ready for comprehensive testing."
   - agent: "testing"
+    message: "🔍 CRITICAL BUG IDENTIFIED: Found authentication state management bug in server.py. The is_logged_in flag starts as False and is only updated when check_login_status() is explicitly called. This explains user's issue: 'linkedin is already logged in but getting error on scraping'. All dependencies (soupsieve, Playwright) working correctly."
+  - agent: "main"
+    message: "✅ CRITICAL BUG FIXED: Added await scraper.check_login_status() calls before checking is_logged_in flag in both scrape_linkedin_jobs and get_linkedin_user_info endpoints. This ensures authentication state is verified from browser session before denying access. The reported scraping error should now be resolved."
+  - agent: "testing"
     message: "✅ COMPREHENSIVE BACKEND TESTING COMPLETE: All 16 tests passed (100% success rate). ✅ Dependencies verified: soupsieve and Playwright working correctly. ✅ Browser initialization successful with stealth features. ✅ Authentication endpoints working properly. ❌ CRITICAL ISSUE IDENTIFIED: Authentication state management bug in server.py - scraping endpoint checks is_logged_in flag directly without calling check_login_status() first, causing scraping to fail even when user has valid session. This explains user's reported issue. All other functionality working correctly."
