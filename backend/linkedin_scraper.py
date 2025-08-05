@@ -657,6 +657,15 @@ async def get_scraper_instance() -> LinkedInScraper:
     """Get or create scraper instance with enhanced error handling"""
     global _scraper_instance
     
+    # If we have an instance but it doesn't have a working browser, reset it
+    if _scraper_instance is not None and (_scraper_instance.browser is None or _scraper_instance.page is None):
+        logger.info("Resetting scraper instance due to browser initialization issues")
+        try:
+            await _scraper_instance.close()
+        except:
+            pass
+        _scraper_instance = None
+    
     if _scraper_instance is None:
         _scraper_instance = LinkedInScraper()
         
