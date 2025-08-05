@@ -111,7 +111,7 @@ backend:
     file: "server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
       - working: "NA"
         agent: "main"
@@ -122,6 +122,9 @@ backend:
       - working: true
         agent: "testing"
         comment: "✅ PASSED: All LinkedIn authentication endpoints working correctly. Auth status check, login timeout handling, logout, and user info endpoints all function properly with correct error handling for unauthenticated requests."
+      - working: true
+        agent: "main"
+        comment: "CRITICAL BUG FIX: Fixed authentication state management bug where is_logged_in flag wasn't being updated before checking authentication status in scrape-jobs and user-info endpoints. Added await scraper.check_login_status() calls."
 
   - task: "Enterprise-grade Anti-Detection Web Scraper"
     implemented: true
