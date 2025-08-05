@@ -86,6 +86,11 @@ async def get_status_checks():
 @api_router.post("/linkedin/auth")
 async def linkedin_auth(request: LinkedInLoginRequest):
     """Handle LinkedIn authentication actions"""
+    # Validate action first
+    valid_actions = ["check_status", "login", "logout"]
+    if request.action not in valid_actions:
+        raise HTTPException(status_code=400, detail=f"Invalid action. Valid actions are: {', '.join(valid_actions)}")
+    
     try:
         scraper = await get_scraper_instance()
         
@@ -126,9 +131,6 @@ async def linkedin_auth(request: LinkedInLoginRequest):
         elif request.action == "logout":
             result = await scraper.logout()
             return result
-        
-        else:
-            raise HTTPException(status_code=400, detail="Invalid action. Valid actions are: check_status, login, logout")
             
     except Exception as e:
         logging.error(f"LinkedIn auth error: {e}")
