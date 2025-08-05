@@ -67,6 +67,12 @@ class LinkedInScraper:
     async def init_browser(self, headless: bool = True):
         """Initialize Playwright browser with stealth settings"""
         try:
+            # Set browser path if specified
+            import os
+            browsers_path = os.environ.get('PLAYWRIGHT_BROWSERS_PATH')
+            if browsers_path:
+                os.environ['PLAYWRIGHT_BROWSERS_PATH'] = browsers_path
+                
             playwright = await async_playwright().start()
             
             # Launch browser with stealth settings
