@@ -1,7 +1,10 @@
 import React from "react";
 import { JobSearchForm } from "@/components/JobSearchForm";
 import { JobResults } from "@/components/JobResults";
+import { LinkedInAuth } from "@/components/LinkedInAuth";
+import { LinkedInScraper } from "@/components/LinkedInScraper";
 import { useJobSearch } from "@/hooks/useJobSearch";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const Index = () => {
   const { 
@@ -25,19 +28,30 @@ const Index = () => {
           </p>
         </div>
         
-        <div className="mb-8">
-          <JobSearchForm onSearch={searchJobs} isLoading={isLoading} />
-        </div>
-        
-        <JobResults
-          jobs={jobs}
-          isLoading={isLoading}
-          currentPage={currentPage}
-          totalPages={totalPages}
-          totalJobs={totalJobs}
-          onPageChange={loadMore}
-          onSortChange={sortJobs}
-        />
+        <Tabs defaultValue="search" className="w-full">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="search">Job Search</TabsTrigger>
+            <TabsTrigger value="linkedin">LinkedIn Scraper</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="search" className="space-y-8">
+            <JobSearchForm onSearch={searchJobs} isLoading={isLoading} />
+            <JobResults
+              jobs={jobs}
+              isLoading={isLoading}
+              currentPage={currentPage}
+              totalPages={totalPages}
+              totalJobs={totalJobs}
+              onPageChange={loadMore}
+              onSortChange={sortJobs}
+            />
+          </TabsContent>
+          
+          <TabsContent value="linkedin" className="space-y-8">
+            <LinkedInAuth />
+            <LinkedInScraper />
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );
