@@ -144,13 +144,20 @@ async def get_linkedin_user_info():
             raise HTTPException(status_code=401, detail="Not logged in")
         
         user_info = await scraper.get_user_info()
+        
+        # Check if there was an error getting user info
+        if "error" in user_info:
+            raise HTTPException(status_code=500, detail=f"Browser error: {user_info['error']}")
+        
         return {
             "success": True,
             "user": user_info
         }
         
+    except HTTPException:
+        raise
     except Exception as e:
-        logging.error(f"User info error: {e}")
+        logger.error(f"User info error: {e}")
         raise HTTPException(status_code=500, detail=f"Failed to get user info: {str(e)}")
 
 # LinkedIn Job Scraping Endpoints
