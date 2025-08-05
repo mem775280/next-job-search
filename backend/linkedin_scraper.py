@@ -158,6 +158,10 @@ class LinkedInScraper:
     async def check_login_status(self) -> bool:
         """Check if user is logged into LinkedIn"""
         try:
+            if not self.page:
+                logger.warning("Browser page not initialized")
+                return False
+                
             await self.page.goto(self.config.BASE_URL, wait_until='networkidle')
             await self.human_like_delay()
             
