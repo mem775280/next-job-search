@@ -188,6 +188,12 @@ class LinkedInScraper:
     async def wait_for_manual_login(self) -> Dict[str, Any]:
         """Handle manual login process"""
         try:
+            if not self.page:
+                return {
+                    "success": False,
+                    "message": "Browser not initialized. Please ensure Playwright browsers are installed."
+                }
+                
             # Navigate to login page
             await self.page.goto(self.config.LOGIN_URL, wait_until='networkidle')
             await self.human_like_delay()
