@@ -276,11 +276,13 @@ metadata:
 
 test_plan:
   current_focus:
+    - "Authentication State Management Bug Fix"
     - "LinkedIn Login/Logout UI"
     - "Advanced Filtering Interface"
     - "Real-time Scraping Progress UI"
     - "CSV Export Button"
-  stuck_tasks: []
+  stuck_tasks:
+    - "Authentication State Management Bug Fix"
   test_all: false
   test_priority: "high_first"
 
