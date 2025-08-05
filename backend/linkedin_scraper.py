@@ -561,7 +561,7 @@ async def get_scraper_instance() -> LinkedInScraper:
     if _scraper_instance is None:
         _scraper_instance = LinkedInScraper()
         try:
-            await _scraper_instance.init_browser(headless=False)  # Set to False for manual login
+            await _scraper_instance.init_browser(headless=True)  # Set to True for headless mode in container
         except Exception as e:
             logger.error(f"Failed to initialize scraper browser: {e}")
             # For testing, we'll still return the instance but it won't be functional
