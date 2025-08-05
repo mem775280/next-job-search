@@ -69,7 +69,7 @@ class LinkedInScraper:
         try:
             # Ensure proper browser path is set
             import os
-            browsers_path = os.environ.get('PLAYWRIGHT_BROWSERS_PATH', '/opt/playwright')
+            browsers_path = os.environ.get('PLAYWRIGHT_BROWSERS_PATH', '/pw-browsers')
             os.environ['PLAYWRIGHT_BROWSERS_PATH'] = browsers_path
             
             playwright = await async_playwright().start()
@@ -78,7 +78,6 @@ class LinkedInScraper:
             browser_args = [
                 '--no-sandbox',
                 '--disable-blink-features=AutomationControlled',
-                '--disable-features=VizDisplayCompositor',
                 '--disable-dev-shm-usage',
                 '--disable-extensions',
                 '--no-first-run',
@@ -90,7 +89,6 @@ class LinkedInScraper:
                 '--disable-backgrounding-occluded-windows',
                 '--disable-renderer-backgrounding',
                 '--disable-features=TranslateUI',
-                '--disable-ipc-flooding-protection',
                 '--window-size=1366,768',
             ]
             
@@ -98,8 +96,6 @@ class LinkedInScraper:
             if headless:
                 browser_args.extend([
                     '--headless=new',
-                    '--virtual-time-budget=5000',
-                    '--run-all-compositor-stages-before-draw',
                     '--disable-background-tasks'
                 ])
             else:
