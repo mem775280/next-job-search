@@ -46,7 +46,7 @@ export const LinkedInScraper = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [scrapingStatus, setScrapingStatus] = useState<string>('');
 
-  const backendUrl = import.meta.env.REACT_APP_BACKEND_URL || process.env.REACT_APP_BACKEND_URL;
+  const backendUrl = import.meta.env.VITE_REACT_APP_BACKEND_URL;
 
   const handleFilterChange = (key: keyof ScrapingFilters, value: any) => {
     setFilters(prev => ({ ...prev, [key]: value }));
@@ -240,12 +240,12 @@ export const LinkedInScraper = () => {
 
             <div className="space-y-2">
               <label className="text-sm font-medium">Experience Level</label>
-              <Select value={filters.experience_level || ''} onValueChange={(value) => handleFilterChange('experience_level', value || undefined)}>
+              <Select value={filters.experience_level || 'any'} onValueChange={(value) => handleFilterChange('experience_level', value === 'any' ? undefined : value)}>
                 <SelectTrigger>
                   <SelectValue placeholder="Any level" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Any level</SelectItem>
+                  <SelectItem value="any">Any level</SelectItem>
                   <SelectItem value="internship">Internship</SelectItem>
                   <SelectItem value="entry">Entry level</SelectItem>
                   <SelectItem value="associate">Associate</SelectItem>
@@ -258,12 +258,12 @@ export const LinkedInScraper = () => {
 
             <div className="space-y-2">
               <label className="text-sm font-medium">Job Type</label>
-              <Select value={filters.job_type || ''} onValueChange={(value) => handleFilterChange('job_type', value || undefined)}>
+              <Select value={filters.job_type || 'any'} onValueChange={(value) => handleFilterChange('job_type', value === 'any' ? undefined : value)}>
                 <SelectTrigger>
                   <SelectValue placeholder="Any type" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Any type</SelectItem>
+                  <SelectItem value="any">Any type</SelectItem>
                   <SelectItem value="full-time">Full-time</SelectItem>
                   <SelectItem value="part-time">Part-time</SelectItem>
                   <SelectItem value="contract">Contract</SelectItem>

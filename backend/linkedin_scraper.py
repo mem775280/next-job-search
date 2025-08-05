@@ -218,9 +218,11 @@ class LinkedInScraper:
                     Object.defineProperty(navigator, 'maxTouchPoints', { get: () => 1 });
                     
                     // Mock media devices
-                    navigator.mediaDevices.getUserMedia = navigator.mediaDevices.getUserMedia || function() {
-                        return Promise.resolve({});
-                    };
+                    if (navigator.mediaDevices) {
+                        navigator.mediaDevices.getUserMedia = navigator.mediaDevices.getUserMedia || function() {
+                            return Promise.resolve({});
+                        };
+                    }
                     
                     // Add realistic battery API
                     navigator.getBattery = function() {

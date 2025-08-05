@@ -216,6 +216,8 @@ async def scrape_linkedin_jobs(request: LinkedInScrapingRequest, background_task
         else:
             return result
             
+    except HTTPException:
+        raise
     except Exception as e:
         logging.error(f"Scraping error: {e}")
         raise HTTPException(status_code=500, detail=f"Scraping failed: {str(e)}")
@@ -278,6 +280,8 @@ async def export_jobs_csv():
             media_type='application/octet-stream'
         )
         
+    except HTTPException:
+        raise
     except Exception as e:
         logging.error(f"CSV export error: {e}")
         raise HTTPException(status_code=500, detail=f"Export failed: {str(e)}")

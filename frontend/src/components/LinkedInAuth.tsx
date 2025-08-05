@@ -24,7 +24,7 @@ export const LinkedInAuth = () => {
     loading: true
   });
 
-  const backendUrl = import.meta.env.REACT_APP_BACKEND_URL || process.env.REACT_APP_BACKEND_URL;
+  const backendUrl = import.meta.env.VITE_REACT_APP_BACKEND_URL;
 
   // Check authentication status on component mount
   useEffect(() => {
