@@ -17,7 +17,7 @@ from dotenv import load_dotenv
 load_dotenv(Path(__file__).parent / 'frontend' / '.env')
 
 # Get backend URL from environment
-BACKEND_URL = os.getenv('VITE_REACT_APP_BACKEND_URL', 'http://localhost:8001')
+BACKEND_URL = os.getenv('REACT_APP_BACKEND_URL', 'http://localhost:8001')
 API_BASE = f"{BACKEND_URL}/api"
 
 class LinkedInScraperTester:
