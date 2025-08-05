@@ -279,6 +279,9 @@ class LinkedInScraper:
     async def get_user_info(self) -> Dict[str, str]:
         """Get basic user information"""
         try:
+            if not self.page:
+                return {"name": "Unknown User", "logged_in": False, "error": "Browser not initialized"}
+                
             await self.page.goto(f"{self.config.BASE_URL}/in/me/", wait_until='networkidle')
             
             name = await self.page.text_content('h1')
