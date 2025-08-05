@@ -293,13 +293,9 @@ metadata:
   run_ui: false
 
 test_plan:
-  current_focus:
-    - "LinkedIn Login/Logout UI"
-    - "Advanced Filtering Interface" 
-    - "Real-time Scraping Progress UI"
-    - "CSV Export Button"
+  current_focus: []
   stuck_tasks: []
-  test_all: true
+  test_all: false
   test_priority: "high_first"
 
 agent_communication:
