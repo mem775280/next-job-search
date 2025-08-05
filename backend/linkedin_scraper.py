@@ -66,24 +66,30 @@ class LinkedInScraper:
         
     async def init_browser(self, headless: bool = True):
         """Initialize Playwright browser with stealth settings"""
-        playwright = await async_playwright().start()
-        
-        # Launch browser with stealth settings
-        self.browser = await playwright.chromium.launch(
-            headless=headless,
-            args=[
-                '--no-sandbox',
-                '--disable-blink-features=AutomationControlled',
-                '--disable-features=VizDisplayCompositor',
-                '--disable-dev-shm-usage',
-                '--disable-extensions',
-                '--no-first-run',
-                '--disable-default-apps',
-                '--disable-infobars',
-                '--window-size=1366,768',
-                '--start-maximized'
-            ]
-        )
+        try:
+            playwright = await async_playwright().start()
+            
+            # Launch browser with stealth settings
+            self.browser = await playwright.chromium.launch(
+                headless=headless,
+                args=[
+                    '--no-sandbox',
+                    '--disable-blink-features=AutomationControlled',
+                    '--disable-features=VizDisplayCompositor',
+                    '--disable-dev-shm-usage',
+                    '--disable-extensions',
+                    '--no-first-run',
+                    '--disable-default-apps',
+                    '--disable-infobars',
+                    '--window-size=1366,768',
+                    '--start-maximized'
+                ]
+            )
+        except Exception as e:
+            logger.error(f"Failed to initialize browser: {e}")
+            # For testing purposes, set browser to None and handle gracefully
+            self.browser = None
+            raise e
         
         # Create context with anti-detection settings
         self.context = await self.browser.new_context(
