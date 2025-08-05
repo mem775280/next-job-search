@@ -142,6 +142,9 @@ async def get_linkedin_user_info():
     try:
         scraper = await get_scraper_instance()
         
+        # Check login status before using cached flag
+        await scraper.check_login_status()
+        
         if not scraper.is_logged_in:
             raise HTTPException(status_code=401, detail="Not logged in")
         
