@@ -67,84 +67,187 @@ class LinkedInScraper:
     async def init_browser(self, headless: bool = True):
         """Initialize Playwright browser with stealth settings"""
         try:
-            # Set browser path if specified
+            # Ensure proper browser path is set
             import os
-            browsers_path = os.environ.get('PLAYWRIGHT_BROWSERS_PATH')
-            if browsers_path:
-                os.environ['PLAYWRIGHT_BROWSERS_PATH'] = browsers_path
-                
+            browsers_path = os.environ.get('PLAYWRIGHT_BROWSERS_PATH', '/opt/playwright')
+            os.environ['PLAYWRIGHT_BROWSERS_PATH'] = browsers_path
+            
             playwright = await async_playwright().start()
             
-            # Launch browser with stealth settings
+            # Enhanced browser arguments for container environment
+            browser_args = [
+                '--no-sandbox',
+                '--disable-blink-features=AutomationControlled',
+                '--disable-features=VizDisplayCompositor',
+                '--disable-dev-shm-usage',
+                '--disable-extensions',
+                '--no-first-run',
+                '--disable-default-apps',
+                '--disable-infobars',
+                '--disable-gpu',
+                '--disable-software-rasterizer',
+                '--disable-background-timer-throttling',
+                '--disable-backgrounding-occluded-windows',
+                '--disable-renderer-backgrounding',
+                '--disable-features=TranslateUI',
+                '--disable-ipc-flooding-protection',
+                '--window-size=1366,768',
+            ]
+            
+            # Additional args for headless mode in containers
+            if headless:
+                browser_args.extend([
+                    '--headless=new',
+                    '--virtual-time-budget=5000',
+                    '--run-all-compositor-stages-before-draw',
+                    '--disable-background-tasks'
+                ])
+            else:
+                browser_args.extend([
+                    '--start-maximized',
+                    '--disable-web-security',
+                ])
+            
+            # Launch browser with enhanced settings
             self.browser = await playwright.chromium.launch(
                 headless=headless,
-                args=[
-                    '--no-sandbox',
-                    '--disable-blink-features=AutomationControlled',
-                    '--disable-features=VizDisplayCompositor',
-                    '--disable-dev-shm-usage',
-                    '--disable-extensions',
-                    '--no-first-run',
-                    '--disable-default-apps',
-                    '--disable-infobars',
-                    '--window-size=1366,768',
-                    '--start-maximized'
-                ]
+                args=browser_args,
+                timeout=60000,  # Increase timeout for container environments
             )
+            
+            # Verify browser launched successfully
+            if not self.browser:
+                raise Exception("Browser failed to launch")
+                
+            logger.info(f"Browser initialized successfully (headless={headless})")
+            
         except Exception as e:
             logger.error(f"Failed to initialize browser: {e}")
-            # For testing purposes, set browser to None and handle gracefully
             self.browser = None
-            raise e
+            # Re-raise the exception to be handled by caller
+            raise Exception(f"Browser initialization failed: {str(e)}. Please ensure Playwright browsers are installed correctly.")
         
-        # Create context with anti-detection settings
-        self.context = await self.browser.new_context(
-            user_agent=self.current_user_agent,
-            viewport=self.current_viewport,
-            locale='en-US',
-            timezone_id='America/New_York',
-            permissions=['geolocation'],
-            extra_http_headers={
-                'Accept-Language': 'en-US,en;q=0.9',
-                'Accept-Encoding': 'gzip, deflate, br',
-                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-                'Connection': 'keep-alive',
-                'Upgrade-Insecure-Requests': '1',
-            }
-        )
-        
-        # Add stealth scripts
-        await self.context.add_init_script("""
-            Object.defineProperty(navigator, 'webdriver', {
-                get: () => undefined,
-            });
+        try:
+            # Create context with anti-detection settings
+            self.context = await self.browser.new_context(
+                user_agent=self.current_user_agent,
+                viewport=self.current_viewport,
+                locale='en-US',
+                timezone_id='America/New_York',
+                permissions=['geolocation'],
+                java_script_enabled=True,
+                extra_http_headers={
+                    'Accept-Language': 'en-US,en;q=0.9',
+                    'Accept-Encoding': 'gzip, deflate, br',
+                    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+                    'Connection': 'keep-alive',
+                    'Upgrade-Insecure-Requests': '1',
+                    'Sec-Fetch-Dest': 'document',
+                    'Sec-Fetch-Mode': 'navigate',
+                    'Sec-Fetch-Site': 'none',
+                    'Sec-Fetch-User': '?1',
+                }
+            )
             
-            window.chrome = {
-                runtime: {},
-            };
-            
-            Object.defineProperty(navigator, 'languages', {
-                get: () => ['en-US', 'en'],
-            });
-            
-            Object.defineProperty(navigator, 'plugins', {
-                get: () => [1, 2, 3, 4, 5],
-            });
-        """)
-        
-        self.page = await self.context.new_page()
-        
-        # Set additional stealth properties
-        await self.page.evaluate("""
-            () => {
-                delete navigator.__proto__.webdriver;
-                navigator.permissions.query = (parameters) => (
+            # Add comprehensive stealth scripts
+            await self.context.add_init_script("""
+                // Hide webdriver property
+                Object.defineProperty(navigator, 'webdriver', {
+                    get: () => undefined,
+                });
+                
+                // Add chrome runtime
+                window.chrome = {
+                    runtime: {},
+                    loadTimes: function() {
+                        return {
+                            commitLoadTime: Date.now() - Math.random() * 1000,
+                            finishDocumentLoadTime: Date.now() - Math.random() * 1000,
+                            finishLoadTime: Date.now() - Math.random() * 1000,
+                            firstPaintAfterLoadTime: 0,
+                            firstPaintTime: Date.now() - Math.random() * 1000,
+                            navigationType: 'Other',
+                            wasFetchedViaSpdy: false,
+                            wasNpnNegotiated: false
+                        };
+                    },
+                    csi: function() {
+                        return {
+                            onloadT: Date.now(),
+                            pageT: Date.now() - Math.random() * 1000,
+                            tran: 15
+                        };
+                    }
+                };
+                
+                // Override languages
+                Object.defineProperty(navigator, 'languages', {
+                    get: () => ['en-US', 'en'],
+                });
+                
+                // Mock plugins
+                Object.defineProperty(navigator, 'plugins', {
+                    get: () => [1, 2, 3, 4, 5],
+                });
+                
+                // Mock permissions
+                const originalQuery = window.navigator.permissions.query;
+                window.navigator.permissions.query = (parameters) => (
                     parameters.name === 'notifications' ?
                         Promise.resolve({ state: Notification.permission }) :
-                        Promise.resolve({ state: 'granted' })
+                        originalQuery(parameters)
                 );
-            }
-        """)
+                
+                // Override getTimezoneOffset
+                Date.prototype.getTimezoneOffset = function() {
+                    return -300; // EST timezone
+                };
+                
+                // Add realistic screen properties
+                Object.defineProperty(screen, 'availWidth', { get: () => 1366 });
+                Object.defineProperty(screen, 'availHeight', { get: () => 728 });
+                Object.defineProperty(screen, 'width', { get: () => 1366 });
+                Object.defineProperty(screen, 'height', { get: () => 768 });
+            """)
+            
+            self.page = await self.context.new_page()
+            
+            # Set additional stealth properties
+            await self.page.evaluate("""
+                () => {
+                    // Remove webdriver traces
+                    delete navigator.__proto__.webdriver;
+                    
+                    // Override automation indicators
+                    Object.defineProperty(navigator, 'maxTouchPoints', { get: () => 1 });
+                    
+                    // Mock media devices
+                    navigator.mediaDevices.getUserMedia = navigator.mediaDevices.getUserMedia || function() {
+                        return Promise.resolve({});
+                    };
+                    
+                    // Add realistic battery API
+                    navigator.getBattery = function() {
+                        return Promise.resolve({
+                            charging: true,
+                            chargingTime: 0,
+                            dischargingTime: Infinity,
+                            level: 1,
+                            addEventListener: function() {},
+                            removeEventListener: function() {}
+                        });
+                    };
+                }
+            """)
+            
+            logger.info("Browser context and page created successfully with stealth configuration")
+            
+        except Exception as e:
+            logger.error(f"Failed to create browser context: {e}")
+            if self.browser:
+                await self.browser.close()
+                self.browser = None
+            raise Exception(f"Browser context creation failed: {str(e)}")
         
     async def human_like_delay(self, min_delay: float = None, max_delay: float = None):
         """Add human-like random delays"""
